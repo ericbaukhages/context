@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+*.compiled
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local database (we only want schema/migrations, not actual data)
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Environment
+.env
+.env.local
+
+# Bun
+bun.lockb
