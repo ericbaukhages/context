@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { Command } from "commander";
 import { createProject, listProjects, getProjectByName, updateProjectStatus, archiveProject, deleteProject } from "./models/project.js";
+import { setupWorktreeCommands } from "./commands/worktree.js";
 
 const program = new Command();
 
@@ -98,5 +99,7 @@ project
       process.exit(1);
     }
   });
+
+setupWorktreeCommands(program);
 
 program.parse();
