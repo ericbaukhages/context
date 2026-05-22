@@ -4,6 +4,7 @@ import { createProject, listProjects, getProjectByName, updateProjectStatus, arc
 import { setupWorktreeCommands } from "./commands/worktree.js";
 import { setupSessionCommands } from "./commands/session.js";
 import { setupAgentCommands } from "./commands/agent.js";
+import { setupLogCommands } from "./commands/log.js";
 
 const program = new Command();
 
@@ -105,5 +106,6 @@ project
 setupWorktreeCommands(program);
 setupSessionCommands(program);
 setupAgentCommands(program);
+setupLogCommands(program);
 
 program.parse();
