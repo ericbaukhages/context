@@ -6,6 +6,7 @@ import { setupSessionCommands } from "./commands/session.js";
 import { setupAgentCommands } from "./commands/agent.js";
 import { setupLogCommands } from "./commands/log.js";
 import { setupDataCommands } from "./commands/data.js";
+import { setupCompletionCommands } from "./commands/completion.js";
 
 const program = new Command();
 
@@ -109,5 +110,6 @@ setupSessionCommands(program);
 setupAgentCommands(program);
 setupLogCommands(program);
 setupDataCommands(program);
+setupCompletionCommands(program);
 
 program.parse();

@@ -1,44 +1,87 @@
-# context
+# Context
 
-`context` (daily alias: `ctx`) is a CLI tool for managing project lifecycles, git worktrees, tmux sessions, and agent runs.
+A project lifecycle and context manager. Tracks ideas, repos, worktrees, tmux sessions, and agent runs.
 
-## Quick Start
+## Install
+
+### 1. Build the binary
+
+Requires [Bun](https://bun.sh).
 
 ```bash
-# Build the binary
+git clone <repo-url>
+cd context
+bun install
 bun run build
-
-# Install to PATH
-mkdir -p ~/.local/bin
-cp dist/context ~/.local/bin/
-
-# Source the shell shim
-echo 'source /path/to/context/scripts/context.sh' >> ~/.zshrc
 ```
 
-Then: `ctx myproject` to start a session and attach, or `context project add my-idea` to log an idea.
+This produces `dist/context`.
 
-## What It Does
+### 2. Put the binary on your PATH
 
-Track every project stage from `IDEA` → `SPEC` → `REPO` → `ACTIVE` → `ARCHIVED`. Use git worktrees to isolate explorations. Log tmux sessions and agent runs to a local SQLite database for later querying.
+```bash
+mkdir -p ~/.local/bin
+cp dist/context ~/.local/bin/
+```
 
-## Built With
+### 3. Install shell completions
 
-- Bun + TypeScript
-- `commander` for CLI
-- SQLite (`bun:sqlite`) for data
-- YAML for config
+**Bash:**
 
-## AI Disclaimer
+```bash
+# Save to a completions directory
+context completion bash > ~/.local/share/bash-completion/completions/context
 
-This project is being built with the help of AI tools. Currently that means **Kimi k2.5** via [opencode](https://github.com/opencode-ai/opencode). We expect to use other models and agents over time.
+# Or source directly in ~/.bashrc:
+echo 'source <(context completion bash)' >> ~/.bashrc
+```
 
-## Project Docs
+**Zsh:**
 
-- `HANDOFF.md` — Full project status, decisions, and next steps
-- `spec/SPEC.md` — MVP specification
-- `QUESTIONS.md` — Original Q&A that shaped the project
+```bash
+# Save to a site-functions directory (must be in $fpath)
+mkdir -p /usr/local/share/zsh/site-functions
+context completion zsh > /usr/local/share/zsh/site-functions/_context
 
----
+# Or source directly in ~/.zshrc:
+echo 'source <(context completion zsh)' >> ~/.zshrc
+```
 
-*MVP complete. See `HANDOFF.md` for post-MVP roadmap.*
+### 4. Source the shell shim (optional)
+
+The shell shim provides the `ctx` alias for starting sessions and auto-attaching to tmux.
+
+```bash
+echo "source $(pwd)/scripts/context.sh" >> ~/.zshrc
+# Optional fzf wrapper:
+echo "source $(pwd)/scripts/context-fzf.sh" >> ~/.zshrc
+```
+
+Then reload your shell or run `source ~/.zshrc`.
+
+## Update
+
+To update completions after adding new commands or subcommands:
+
+```bash
+# Rebuild the binary
+bun run build
+
+# Regenerate completions
+context completion bash > ~/.local/share/bash-completion/completions/context
+context completion zsh > /usr/local/share/zsh/site-functions/_context
+```
+
+Or, if you source completions directly in your rc file, simply restart your shell.
+
+## Usage
+
+```bash
+context project add my-idea --status IDEA
+context project list
+ctx myproject              # starts session + attaches to tmux
+context log                # see timeline
+context data export        # backup everything
+```
+
+See `context --help` for all commands.
