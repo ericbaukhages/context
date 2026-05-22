@@ -2,6 +2,7 @@
 import { Command } from "commander";
 import { createProject, listProjects, getProjectByName, updateProjectStatus, archiveProject, deleteProject } from "./models/project.js";
 import { setupWorktreeCommands } from "./commands/worktree.js";
+import { setupSessionCommands } from "./commands/session.js";
 
 const program = new Command();
 
@@ -101,5 +102,6 @@ project
   });
 
 setupWorktreeCommands(program);
+setupSessionCommands(program);
 
 program.parse();
