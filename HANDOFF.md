@@ -35,38 +35,54 @@
 2. **Spec written** — Full MVP spec in `spec/SPEC.md`.
 3. **Git repo initialized** — Multiple commits on `main`.
 4. **Project scaffolded** — `bun init`, dependencies installed (`commander`, `js-yaml`).
-5. **Core modules written and tested:**
-   - `src/lib/xdg.ts` — XDG Base Directory path resolution (creates dirs on demand).
-   - `src/config.ts` — YAML config loading with defaults, auto-creates `~/.config/context/config.yaml`.
-   - `src/db.ts` — SQLite connection via `bun:sqlite`, all 5 schema migrations applied.
+5. **All MVP modules written, tested, and committed:**
+   - `src/lib/xdg.ts` — XDG Base Directory path resolution.
+   - `src/lib/git.ts` — Git worktree helpers.
+   - `src/lib/tmux.ts` — Tmux session helpers.
+   - `src/config.ts` — YAML config loading with defaults.
+   - `src/db.ts` — SQLite connection & all 5 schema migrations.
    - `src/models/project.ts` — Project CRUD with activity logging.
-   - `src/index.ts` — CLI entrypoint with `commander`. All `project` subcommands working:
-     - `add`, `list`, `status`, `archive`, `remove`
+   - `src/models/worktree.ts` — Worktree CRUD.
+   - `src/models/session.ts` — Session tracking (start, stop, sync).
+   - `src/models/agent.ts` — Agent run tracking.
+   - `src/commands/worktree.ts` — `worktree add/list/remove`.
+   - `src/commands/session.ts` — `session start/stop/sync/list`.
+   - `src/commands/agent.ts` — `agent start/stop/list`.
+   - `src/commands/log.ts` — `log` timeline query.
+   - `src/commands/data.ts` — `data export/import` JSON/YAML.
+   - `scripts/context.sh` — Shell shim for `ctx()` alias.
+   - `scripts/context-fzf.sh` — Optional `fzf` wrapper.
+   - `dist/context` — Compiled standalone binary.
 
 ---
 
 ## Current State
 
-- **Basic CLI engine is running.** You can add/list/update/remove projects.
+- **MVP is complete.** All spec'd CLI commands are implemented and tested.
+- **Binary compiles.** `bun build --compile --outfile dist/context src/index.ts` produces a working executable.
 - **Database auto-creates.** All tables exist: `projects`, `worktrees`, `sessions`, `agent_runs`, `activity_log`.
 - **Config auto-creates.** `~/.config/context/config.yaml` with sensible defaults.
-- **Next action:** Build `worktree`, `session`, `agent`, and `log` commands.
+- **Next action:** Install the binary and shell shim, then start using it. Or move on to v2 features.
 
 ---
 
-## Next Steps (In Order)
+## Install (Manual)
 
-1. **`src/models/worktree.ts`** — Worktree CRUD (create, list, remove).
-2. **`src/commands/worktree.ts`** — `context worktree add/list/remove` wired to `git worktree`.
-3. **`src/models/session.ts`** — Session tracking (start, stop, sync).
-4. **`src/commands/session.ts`** — `context session start/stop/sync` wired to `tmux`.
-5. **`src/models/agent.ts`** — Agent run tracking.
-6. **`src/commands/agent.ts`** — `context agent start/stop`.
-7. **`src/commands/log.ts`** — `context log` timeline query.
-8. **`src/commands/data.ts`** — `context export/import` for JSON/YAML.
-9. **`scripts/context.sh`** — Shell shim for `ctx()` alias that `exec`s into tmux.
-10. **`scripts/context-fzf.sh`** — Optional `fzf` wrapper for project selection.
-11. **Build & binary** — `bun build --compile --outfile dist/context src/index.ts`.
+```bash
+# 1. Build the binary
+bun run build
+
+# 2. Put it somewhere on your PATH
+mkdir -p ~/.local/bin
+cp dist/context ~/.local/bin/
+
+# 3. Source the shell shim in your rc file
+echo 'source /path/to/context/scripts/context.sh' >> ~/.zshrc
+# Optional: fzf wrapper
+echo 'source /path/to/context/scripts/context-fzf.sh' >> ~/.zshrc
+```
+
+Then: `ctx myproject` to start a session and attach, or `context project add my-idea` to log an idea.
 
 ---
 
@@ -90,20 +106,29 @@
 | `.gitignore` | Standard ignore rules + DB files |
 | `HANDOFF.md` | This file |
 | `src/lib/xdg.ts` | XDG path resolution |
+| `src/lib/git.ts` | Git worktree helpers |
+| `src/lib/tmux.ts` | Tmux session helpers |
 | `src/config.ts` | Config loading |
 | `src/db.ts` | SQLite connection & migrations |
-| `src/models/project.ts` | Project CRUD |
+| `src/models/*.ts` | CRUD models |
+| `src/commands/*.ts` | CLI command handlers |
 | `src/index.ts` | CLI entrypoint |
+| `scripts/context.sh` | Shell shim for `ctx` alias |
+| `scripts/context-fzf.sh` | Optional `fzf` wrapper |
+| `dist/context` | Compiled binary |
 
 ---
 
-## How to Resume
+## Next Steps (Post-MVP)
 
-1. Read `spec/SPEC.md` (especially sections 4–6 for commands and data model).
-2. Pick the next step from the list above.
-3. Write code in `src/models/` and `src/commands/`, wire into `src/index.ts`.
-4. Test with `bun run src/index.ts <command>`.
+1. **MCP server** — Expose context data to chat interfaces.
+2. **Auto-detect agent runs** — Plugin system to hook into tools automatically.
+3. **Time analytics** — `context report` with session duration, agent usage, etc.
+4. **GitHub integration** — Link projects to repos, auto-detect PRs/issues.
+5. **TUI** — Simple ncurses or blessed-based interface (if desired).
+6. **Tests** — Bun test runner for models and commands.
 
 ---
 
 *Last updated: 2026-05-22*
+*Status: MVP Complete*
