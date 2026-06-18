@@ -1,8 +1,8 @@
 import { Command } from "commander";
 import { getProjectByName } from "../models/project.js";
 import { createWorktreeRecord, listWorktrees, getWorktreeByName, deleteWorktreeRecord } from "../models/worktree.js";
-import { isGitRepo, gitWorktreeAdd, gitWorktreeRemove } from "../lib/git.js";
-import { mkdirSync } from "node:fs";
+import { isGitRepo, gitWorktreeAdd, gitWorktreeRemove, gitGetCurrentBranch } from "../lib/git.js";
+import { mkdirSync, existsSync } from "node:fs";
 import { dirname } from "node:path";
 import { getDb } from "../db.js";
 
@@ -58,6 +58,53 @@ export function setupWorktreeCommands(program: Command) {
         );
 
         console.log(`Created worktree "${record.name}" at ${record.path}`);
+      } catch (err) {
+        console.error("Error:", err instanceof Error ? err.message : err);
+        process.exit(1);
+      }
+    });
+
+  worktree
+    .command("register <project> <name> <path>")
+    .description("Register an existing worktree in the DB (no git operations)")
+    .option("-b, --branch <branch>", "Branch name (auto-detected from HEAD if omitted)")
+    .action((projectName: string, name: string, path: string, options: { branch?: string }) => {
+      try {
+        const project = getProjectByName(projectName);
+        if (!project) {
+          console.error(`Project "${projectName}" not found.`);
+          process.exit(1);
+        }
+        if (!project.path) {
+          console.error(`Project "${projectName}" has no path.`);
+          process.exit(1);
+        }
+        if (!existsSync(path)) {
+          console.error(`Path "${path}" does not exist.`);
+          process.exit(1);
+        }
+        if (!isGitRepo(path)) {
+          console.error(`Path "${path}" is not a git repository.`);
+          process.exit(1);
+        }
+
+        const existing = listWorktrees(project.id);
+        if (existing.some((w) => w.name === name)) {
+          console.error(`Worktree "${name}" already exists for project "${projectName}".`);
+          process.exit(1);
+        }
+
+        const branch = options.branch || gitGetCurrentBranch(path);
+
+        const record = createWorktreeRecord(project.id, name, branch, path);
+
+        const db = getDb();
+        db.run(
+          `INSERT INTO activity_log (type, project_id, worktree_id, payload, created_at) VALUES (?, ?, ?, ?, ?)`,
+          ["worktree_registered", project.id, record.id, JSON.stringify({ name, branch, path }), Date.now()]
+        );
+
+        console.log(`Registered worktree "${record.name}" (${record.branch}) at ${record.path}`);
       } catch (err) {
         console.error("Error:", err instanceof Error ? err.message : err);
         process.exit(1);

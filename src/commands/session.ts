@@ -11,7 +11,8 @@ export function setupSessionCommands(program: Command) {
     .command("start <project> [worktree]")
     .description("Start a tmux session (logs to DB)")
     .option("-c, --context <note>", "Optional context note")
-    .action((projectName: string, worktreeName: string | undefined, options: { context?: string }) => {
+    .option("-n, --name <name>", "Tmux session name (default: ctx-<id>)")
+    .action((projectName: string, worktreeName: string | undefined, options: { context?: string; name?: string }) => {
       try {
         const project = getProjectByName(projectName);
         if (!project) {
@@ -37,15 +38,18 @@ export function setupSessionCommands(program: Command) {
         }
 
         const dbSession = startSession(project.id, worktreeId, options.context);
-        const tmuxName = `ctx-${dbSession.id}`;
+        const tmuxName = options.name || `ctx-${dbSession.id}`;
+        const sessionExists = tmuxSessionExists(tmuxName);
 
-        if (tmuxSessionExists(tmuxName)) {
+        if (sessionExists && options.name) {
+          console.log(`Attached to existing tmux session "${tmuxName}".`);
+        } else if (sessionExists) {
           console.error(`Tmux session "${tmuxName}" already exists.`);
           process.exit(1);
+        } else {
+          tmuxNewSession(tmuxName, cwd);
+          console.log(`Started session "${tmuxName}" for project "${projectName}"`);
         }
-
-        tmuxNewSession(tmuxName, cwd);
-        console.log(`Started session "${tmuxName}" for project "${projectName}"`);
         console.log(`Attach with: tmux attach -t ${tmuxName}`);
       } catch (err) {
         console.error("Error:", err instanceof Error ? err.message : err);
