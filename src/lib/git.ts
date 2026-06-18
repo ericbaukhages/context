@@ -12,3 +12,7 @@ export function gitWorktreeAdd(repoPath: string, worktreePath: string, branch: s
 export function gitWorktreeRemove(repoPath: string, worktreePath: string): void {
   execSync(`git -C "${repoPath}" worktree remove "${worktreePath}"`, { encoding: "utf-8" });
 }
+
+export function gitGetCurrentBranch(repoPath: string): string {
+  return execSync(`git -C "${repoPath}" rev-parse --abbrev-ref HEAD`, { encoding: "utf-8" }).trim();
+}
